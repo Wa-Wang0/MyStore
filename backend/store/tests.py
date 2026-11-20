@@ -72,3 +72,82 @@ class PublicProductApiTests(APITestCase):
         data = {c["name"]: c["product_count"] for c in self.client.get("/api/categories/").json()}
         self.assertEqual(data["Coffee"], 3)
         self.assertEqual(data["Pastries"], 2)
+
+
+class CartValidateApiTests(APITestCase):
+    URL = "/api/cart/validate/"
+
+    @classmethod
+    def setUpTestData(cls):
+        coffee = Category.objects.create(name="Coffee")
+        make = Product.objects.create
+        cls.cold = make(name="Cold Brew", category=coffee, price_cents=12000, stock=5)
+        cls.instant = make(name="Instant Coffee", category=coffee, price_cents=8550, stock=9)
+        cls.hidden = make(name="Old Blend", category=coffee, price_cents=1000, stock=9, is_active=False)
+        cls.sold_out = make(name="Mango Float", category=coffee, price_cents=11000, stock=0)
+
+    def post(self, items):
+        return self.client.post(self.URL, {"items": items}, format="json")
+
+    def test_spec_example_totals_exactly_325_50(self):
+        res = self.post([
+            {"product_id": self.cold.id, "quantity": 2},
+            {"product_id": self.instant.id, "quantity": 1},
+        ])
+        data = res.json()
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["total_cents"], 32550)
+        self.assertEqual(data["subtotal_cents"], data["total_cents"])
+        self.assertTrue(data["can_checkout"])
+
+    def test_duplicate_products_are_merged(self):
+        data = self.post([
+            {"product_id": self.cold.id, "quantity": 1},
+            {"product_id": self.cold.id, "quantity": 2},
+        ]).json()
+        self.assertEqual(len(data["lines"]), 1)
+        self.assertEqual(data["lines"][0]["quantity"], 3)
+
+    def test_inactive_product_is_unavailable_and_reveals_nothing(self):
+        data = self.post([{"product_id": self.hidden.id, "quantity": 1}]).json()
+        line = data["lines"][0]
+        self.assertEqual(line["issue"], "unavailable")
+        self.assertNotEqual(line["name"], "Old Blend")
+        self.assertIsNone(line["unit_price_cents"])
+        self.assertFalse(data["can_checkout"])
+
+    def test_missing_product_is_unavailable(self):
+        data = self.post([{"product_id": 99999, "quantity": 1}]).json()
+        self.assertEqual(data["lines"][0]["issue"], "unavailable")
+
+    def test_out_of_stock_blocks_checkout(self):
+        data = self.post([{"product_id": self.sold_out.id, "quantity": 1}]).json()
+        self.assertEqual(data["lines"][0]["issue"], "out_of_stock")
+        self.assertFalse(data["can_checkout"])
+
+    def test_quantity_above_stock_is_flagged_and_not_totalled(self):
+        data = self.post([{"product_id": self.cold.id, "quantity": 6}]).json()
+        self.assertEqual(data["lines"][0]["issue"], "exceeds_stock")
+        self.assertEqual(data["total_cents"], 0)
+        self.assertFalse(data["can_checkout"])
+
+    def test_invalid_quantities_are_flagged(self):
+        for bad in (0, -1, 1.5, "2", None, True):
+            data = self.post([{"product_id": self.cold.id, "quantity": bad}]).json()
+            self.assertEqual(data["lines"][0]["issue"], "invalid_quantity", msg=repr(bad))
+            self.assertFalse(data["can_checkout"])
+
+    def test_empty_cart_cannot_check_out(self):
+        data = self.post([]).json()
+        self.assertEqual(data["lines"], [])
+        self.assertFalse(data["can_checkout"])
+
+    def test_malformed_payloads_return_400(self):
+        self.assertEqual(self.post("nope").status_code, 400)
+        self.assertEqual(self.post([{"quantity": 1}]).status_code, 400)
+        self.assertEqual(self.post(["x"]).status_code, 400)
+        self.assertEqual(self.client.post(self.URL, {}, format="json").status_code, 400)
+
+    def test_too_many_lines_return_400(self):
+        items = [{"product_id": i, "quantity": 1} for i in range(1, 52)]
+        self.assertEqual(self.post(items).status_code, 400)

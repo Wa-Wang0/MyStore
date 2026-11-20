@@ -9,9 +9,11 @@ from rest_framework import generics
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .models import Category, Product
 from .serializers import CategorySerializer, ProductSerializer
+from .services import validate_cart
 
 
 def active_products():
@@ -86,3 +88,17 @@ class ProductDetailView(generics.RetrieveAPIView):
         )
         data["related"] = ProductSerializer(related, many=True).data
         return Response(data)
+
+
+class CartValidateView(APIView):
+    """POST /api/cart/validate/  body: {"items": [{"product_id": 1, "quantity": 2}]}
+
+    The cart itself lives in the browser (guest checkout). This endpoint returns
+    the authoritative price, stock and problems for each line.
+    """
+
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        items = request.data.get("items") if hasattr(request.data, "get") else None
+        return Response(validate_cart(items))
