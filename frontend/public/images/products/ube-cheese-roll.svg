@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-label="Ube Cheese Roll">
+<rect width="400" height="300" fill="#c98a2b"/>
+<circle cx="330" cy="50" r="90" fill="#e6b45c" opacity="0.45"/>
+<circle cx="40" cy="270" r="110" fill="#e6b45c" opacity="0.3"/>
+<text text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" fill="#fff"><tspan x="200" y="150">Ube Cheese Roll</tspan></text>
+<text x="200" y="278" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#fff" opacity="0.8">Pastries (sample image)</text>
+</svg>

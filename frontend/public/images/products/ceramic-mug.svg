@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-label="Ceramic Mug">
+<rect width="400" height="300" fill="#3f6f75"/>
+<circle cx="330" cy="50" r="90" fill="#6a9aa0" opacity="0.45"/>
+<circle cx="40" cy="270" r="110" fill="#6a9aa0" opacity="0.3"/>
+<text text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" fill="#fff"><tspan x="200" y="150">Ceramic Mug</tspan></text>
+<text x="200" y="278" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#fff" opacity="0.8">Merchandise (sample image)</text>
+</svg>

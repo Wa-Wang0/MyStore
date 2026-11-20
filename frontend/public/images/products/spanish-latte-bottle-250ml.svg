@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-label="Spanish Latte Bottle 250ml">
+<rect width="400" height="300" fill="#7a4a2e"/>
+<circle cx="330" cy="50" r="90" fill="#a8714d" opacity="0.45"/>
+<circle cx="40" cy="270" r="110" fill="#a8714d" opacity="0.3"/>
+<text text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" fill="#fff"><tspan x="200" y="134">Spanish Latte</tspan><tspan x="200" y="166">Bottle 250ml</tspan></text>
+<text x="200" y="278" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#fff" opacity="0.8">Coffee (sample image)</text>
+</svg>
